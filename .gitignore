@@ -1,0 +1,27 @@
+# Artefatos de compilacao
+build/
+*.o
+*.obj
+*.exe
+*.out
+*.pdb
+
+# Dados gerados em execucao
+data/*.csv
+data/*.txt
+!data/.gitkeep
+
+# Arquivos temporarios
+*.tmp
+*.txn
+*.journal
+*.log
+
+# Configuracoes locais de editores
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
