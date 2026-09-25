@@ -1,141 +1,244 @@
-# Projeto Malvezzi – Sistema Bancário em C
+<p align="center">
+  <img src="docs/assets/banco-malvezzi-banner.svg" width="100%" alt="Banco Malvezzi — simulador bancário em C11">
+</p>
 
-O Projeto Malvezzi é um sistema bancário desenvolvido em linguagem C, com o objetivo de aplicar conceitos de modularização, manipulação de arquivos, ponteiros e estruturas de dados.
-O sistema simula operações bancárias reais, permitindo o gerenciamento completo de clientes, contas, transações, PIX, cartões e relatórios.
+<p align="center">
+  <strong>Um simulador bancário de terminal, modular, persistente e sem dependências externas.</strong>
+</p>
 
-## Objetivo do Projeto
+<p align="center">
+  <img alt="C11" src="https://img.shields.io/badge/C-11-00599C?style=for-the-badge&logo=c&logoColor=white">
+  <img alt="GCC" src="https://img.shields.io/badge/GCC-compatível-17365D?style=for-the-badge&logo=gnu&logoColor=white">
+  <img alt="GNU Make" src="https://img.shields.io/badge/GNU_Make-build-6D00CC?style=for-the-badge&logo=gnu&logoColor=white">
+  <img alt="Sem dependências" src="https://img.shields.io/badge/dependências-0-16A34A?style=for-the-badge">
+</p>
 
-O trabalho foi desenvolvido com foco em:
+<p align="center">
+  <a href="#visão-geral">Visão geral</a> •
+  <a href="#recursos">Recursos</a> •
+  <a href="#arquitetura">Arquitetura</a> •
+  <a href="#início-rápido">Início rápido</a> •
+  <a href="#persistência">Persistência</a> •
+  <a href="#escopo">Escopo</a>
+</p>
 
-* Aplicar leitura e escrita em arquivos texto para armazenamento persistente.
-* Trabalhar com estruturas e ponteiros.
-* Dividir o projeto em múltiplos módulos com arquivos `.c` e `.h`.
-* Criar um sistema funcional com menus e interações completas.
-* Utilizar Makefile para automação da compilação.
+---
 
-## Estrutura do Projeto
+## Visão geral
 
-PROJETO - MALVEZZI/
-│
-├── banco.exe                     # Executável principal
-├── main.c                        # Arquivo que contém o menu principal
-├── Makefile                      # Automação da compilação
-│
-├── src/                          # Módulos do sistema
-│   ├── banco.c / banco.h         # Funções gerais do banco
-│   ├── cliente.h                 # Estrutura de dados do cliente
-│   ├── io.c / io.h               # Funções de entrada e saída
-│   ├── ordenacao.c / ordenacao.h # Algoritmos de ordenação
-│   ├── persistencia.c/persistencia.h # Leitura e escrita de arquivos
-│
-├── data/                         # Base de dados em arquivos texto
-│   ├── clientes.txt
-│   ├── cartoes.txt
-│   ├── chaves_pix.txt
-│   ├── movimentos.txt
-│   ├── transacoes_pix.txt
-│   ├── ...
-│
-└── .vscode/                      # Configurações de ambiente
+O **Banco Malvezzi** implementa o ciclo essencial de contas e movimentações financeiras em C11. A aplicação roda inteiramente no terminal, mantém o estado em arquivos CSV e separa interface, regras de negócio, domínio e infraestrutura em módulos independentes.
 
-## Funcionalidades do Sistema
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <strong>💸 Valores exatos</strong><br>
+      <sub>Dinheiro representado em centavos inteiros, sem erros de ponto flutuante.</sub>
+    </td>
+    <td align="center" width="33%">
+      <strong>🧩 Código modular</strong><br>
+      <sub>API pública enxuta e detalhes internos separados por responsabilidade.</sub>
+    </td>
+    <td align="center" width="33%">
+      <strong>🛡️ Estado recuperável</strong><br>
+      <sub>Gravação temporária e journal para retomar operações após interrupção do processo.</sub>
+    </td>
+  </tr>
+</table>
 
-## 1. Gerenciamento de Clientes
+## Recursos
 
-* Cadastro de novos clientes
-* Edição de dados
-* Listagem e busca
-* Exclusão lógica com manutenção de histórico
+| Área | O que está disponível |
+|---|---|
+| **Contas** | abertura, consulta, atualização e encerramento lógico |
+| **Movimentações** | depósito, saque, transferência e pagamento com débito imediato |
+| **Consultas** | saldo e dados completos do cliente |
+| **Listagens** | clientes ativos ordenados por nome ou número da conta |
+| **Persistência** | clientes e histórico em CSV com cabeçalho explícito |
+| **Integridade** | CPF e conta únicos, datas válidas, saldo não negativo e auto-transferência bloqueada |
 
-## 2. Contas Bancárias
+## Arquitetura
 
-* Abertura de contas
-* Encerramento de contas
-* Consulta de informações completas
-* Listagem por nome ou número
-* Persistência automática em arquivos
+```mermaid
+flowchart LR
+    CLI[Aplicação CLI] --> API[API pública]
+    CLI --> UI[Apresentação]
+    UI --> TYPES[Tipos públicos]
+    API --> APP[Regras de negócio]
+    APP --> DOMAIN[Domínio]
+    APP --> INFRA[Infraestrutura CSV]
 
-## 3. Operações Financeiras
+    classDef primary fill:#0b2445,stroke:#38bdf8,color:#f8fafc,stroke-width:2px;
+    classDef secondary fill:#123b67,stroke:#60a5fa,color:#f8fafc;
+    class CLI,API,APP primary;
+    class UI,TYPES,DOMAIN,INFRA secondary;
+```
 
-* Depósitos
-* Saques
-* Consulta de saldo
-* Histórico de movimentações
-* Emissão de extratos
+<details>
+<summary><strong>Ver estrutura de diretórios</strong></summary>
 
-## 4. Sistema PIX
+```text
+.
+├── .github/workflows/            # Validação automatizada
+├── data/                         # Estado local gerado em execução
+├── docs/assets/                  # Identidade visual do repositório
+├── examples/data/                # Base sintética opcional
+├── include/banco/                # API e tipos públicos
+│   ├── banco.h
+│   ├── cliente.h
+│   └── dinheiro.h
+├── src/
+│   ├── app/                      # Ponto de entrada e fluxo do menu
+│   ├── application/              # Casos de uso e regras bancárias
+│   ├── domain/                   # Dinheiro e ordenação
+│   ├── infrastructure/           # Persistência e recuperação
+│   └── presentation/             # Entrada e saída de terminal
+├── Makefile
+└── README.md
+```
 
-* Cadastro de chaves PIX
-* Transferências entre contas
-* Registro detalhado de operações
-* Armazenamento separado para fácil auditoria
+</details>
 
-## 5. Cartões
+### Decisões de projeto
 
-* Cadastro de cartões associados à conta
-* Persistência em arquivo dedicado
+| Decisão | Benefício |
+|---|---|
+| `Banco` como tipo opaco | protege o estado interno de acessos diretos |
+| `int64_t` para centavos | mantém cálculos monetários exatos |
+| entrada baseada em `fgets` | trata erro, excesso de caracteres e fim de arquivo |
+| snapshot nas listagens | ordena sem alterar o vetor principal |
+| Quick Sort com pivô central | isola a estratégia de ordenação no domínio |
+| CSV com cabeçalho | deixa o contrato dos dados explícito |
+| arquivo temporário + journal | recupera a operação após interrupção inesperada do processo |
 
-## 6. Ordenação e Relatórios
+## Stack
 
-* Ordenação de clientes e contas por diferentes critérios
-* Implementação no módulo `ordenacao.c`
-* Geração de relatórios a partir dos arquivos
+`C11` · `GCC` · `GNU Make` · `CSV` · biblioteca padrão C
 
-## 7. Persistência de Dados
+> O projeto não usa framework, gerenciador de pacotes, banco de dados ou biblioteca de terceiros.
 
-Todos os dados são armazenados na pasta `/data`, utilizando arquivos `.txt` de fácil leitura.
+## Início rápido
 
-## Tecnologias e Conceitos Utilizados
+### 1. Pré-requisitos
 
-* Linguagem C
-* Modularização
-* Structs e ponteiros
-* Manipulação de arquivos
-* Makefile
-* Ordenação
-* Organização de código
-* VSCode como ambiente de desenvolvimento
+- GCC com suporte a C11;
+- GNU Make (`mingw32-make` também é aceito no Windows).
 
-## Como Compilar e Executar
+### 2. Compilar e executar
 
-Acesse a pasta raiz do projeto:
+<table>
+<tr>
+<td width="50%">
 
-cd "PROJETO - MALVEZZI"
+**Windows + MinGW**
 
-Compile o sistema:
+```powershell
+mingw32-make
+.\build\banco.exe
+```
 
+Se o comando disponível for `make`, ele pode ser usado no lugar de `mingw32-make`.
+
+</td>
+<td width="50%">
+
+**Linux / macOS**
+
+```bash
 make
+./build/banco
+```
 
-## Testes Recomendados
+</td>
+</tr>
+</table>
 
-* Criar um cliente e abrir uma conta
-* Realizar depósito e saque
-* Registrar e utilizar chave PIX
-* Gerar extratos e conferir arquivos
-* Criar vários clientes e testar a ordenação
-* Encerrar contas e confirmar persistência
+Também é possível compilar e executar em uma única etapa:
 
-## Estrutura dos Arquivos de Dados
+```bash
+make run
+```
 
-## clientes.txt
+Para apagar os artefatos locais:
 
-id;nome;cpf;telefone;status
+```bash
+make clean
+```
 
-### movimentos.txt
+### 3. Carregar os dados de exemplo — opcional
 
-id_conta;data;tipo;valor
+Sem `data/clientes.csv`, o sistema inicia com uma base vazia. Para usar os dois clientes sintéticos do repositório:
 
-### transacoes_pix.txt
+<details>
+<summary><strong>PowerShell</strong></summary>
 
-remetente;destinatario;chave;valor;data
+```powershell
+Copy-Item .\examples\data\clientes.csv .\data\clientes.csv
+Copy-Item .\examples\data\movimentos.csv .\data\movimentos.csv
+```
 
-Outros arquivos seguem o mesmo padrão de organização.
+</details>
+
+<details>
+<summary><strong>Bash</strong></summary>
+
+```bash
+cp examples/data/clientes.csv data/clientes.csv
+cp examples/data/movimentos.csv data/movimentos.csv
+```
+
+</details>
+
+Os arquivos de `data/` são locais e permanecem fora do versionamento.
+
+## Persistência
+
+### Clientes
+
+`data/clientes.csv` mantém uma conta por linha:
+
+```text
+agencia;conta;nome;cpf;data_nascimento;telefone;endereco;cep;local;numero;bairro;cidade;estado;saldo_centavos;ativo
+```
+
+### Movimentações
+
+`data/movimentos.csv` registra créditos e débitos em ordem cronológica:
+
+```text
+data_hora;conta;tipo;valor_centavos;saldo_centavos
+```
+
+- créditos usam valor positivo;
+- débitos usam valor negativo;
+- datas seguem `AAAA-MM-DDTHH:MM:SS`;
+- CPF é persistido em formato canônico com 11 dígitos;
+- arquivos `.tmp`, `.txn` e `.journal` são internos e transitórios.
+
+O journal recupera interrupções do processo durante uma movimentação. Como a persistência usa somente recursos portáveis da biblioteca padrão, essa garantia não cobre queda de energia ou falha do sistema operacional.
+
+## Regras de negócio
+
+- agência com exatamente quatro dígitos;
+- CPF válido e único em todo o histórico;
+- número de conta não reutilizável após encerramento;
+- data de nascimento válida no formato `AAAA-MM-DD`;
+- valores positivos com no máximo duas casas decimais, usando ponto ou vírgula;
+- encerramento permitido somente com saldo zero;
+- contas encerradas excluídas de consultas e movimentações;
+- transferência para a própria conta rejeitada.
+
+## Escopo
+
+O sistema é local e opera em um único processo. A transferência usa o número da conta e a opção de cartão representa um débito imediato no saldo — não há chave PIX, limite de crédito, fatura, CVV ou emissão de cartão.
+
+Autenticação, criptografia, acesso concorrente e integração com instituições financeiras não fazem parte da implementação atual.
+
+> [!WARNING]
+> Não utilize dados pessoais ou financeiros reais.
 
 ## Autor
 
-Matheus Pinheiro Barbosa, Pedro Gabriel e Thiago da Costa.
-Estudantes de Análise e Desenvolvimento de Sistemas – UCB
-
-## Licença
-
-Projeto desenvolvido para fins acadêmicos e livre para estudo, análise e aperfeiçoamento.
+<p align="center">
+  <strong>Matheus Pinheiro Barbosa</strong><br>
+  <a href="https://github.com/ObarbosaDev">@ObarbosaDev</a>
+</p>
